@@ -30,7 +30,7 @@ class Shop_Cart
         $this->CI =& get_instance();
         $cart = $this->CI->session->userdata('cart') ?: null;
 
-        if ($cart != null) {
+        if ($cart !== null) {
             $this->baskets = unserialize($cart);
         }
     }
@@ -49,8 +49,9 @@ class Shop_Cart
      */
     public function addBasket($id)
     {
-        if ($id != null) {
+        if ($id !== null) {
             $basket = BasketPeer::retrieveByPK($id);
+
             if ($basket !== null) {
                 $basketCookies = \CookieShop\Model\BasketCookiePeer::retrieveByBasketId($id);
                 $basket->setCookies($basketCookies);
@@ -70,7 +71,7 @@ class Shop_Cart
      */
     public function removeBasket($key)
     {
-        if ($key != null && array_key_exists($key, $this->baskets)) {
+        if ($key !== null && array_key_exists($key, $this->baskets)) {
             unset($this->baskets[$key]);
 
             return true;
@@ -116,9 +117,11 @@ class Shop_Cart
     public function setBasketType($key, $type)
     {
         $basket = $this->getBasket($key);
-        if ($basket != null) {
+
+        if ($basket !== null) {
             $newBasket = BasketPeer::retrieveByPK($type);
-            if ($newBasket != null) {
+
+            if ($newBasket !== null) {
                 $newBasket->setCookiesByArray($basket->getCookies());
 
                 if ($newBasket->countCookies() == $newBasket->getSize()) {
