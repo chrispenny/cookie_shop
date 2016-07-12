@@ -7,11 +7,14 @@ class Shop extends CI_Controller
 {
     public function index()
     {
+        $baskets = \CookieShop\Models\BasketPeer::retrieveBaskets();
+        $trolley = \CookieShop\Models\TrolleyPeer::retrieveTrolley($this->session->userdata('id'));
+
         $data = array(
             'title' => 'Products',
             'page' => 'shop/view_index',
-            'baskets' => \CookieShop\Model\BasketPeer::retrieveBaskets(),
-            'cart' => new Shop_cart(),
+            'baskets' => $baskets,
+            'trolley' => $trolley,
         );
 
         $this->load->view('template', $data);

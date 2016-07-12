@@ -33,7 +33,7 @@ TrolleyManager = function () {
 
     this.addBasket = function (id) {
         $.post('/ajax/add_basket/', {
-            id: id
+            basketId: id
         }, function (response) {
             var data = eval('(' + response + ')');
             var info;
@@ -60,14 +60,14 @@ TrolleyManager = function () {
         });
     };
 
-    this.removeBasket = function (key) {
+    this.removeBasket = function (id) {
         $.post('/ajax/remove_basket/', {
-            key: key
+            trolleyBasketId: id
         }, function (response) {
             var data = eval('(' + response + ')');
 
             if (data['status'] == 1) {
-                this.removeBasketRow(key);
+                this.removeBasketRow(id);
                 this.checkCartCount();
             } else {
                 var info = {
@@ -81,29 +81,19 @@ TrolleyManager = function () {
         });
     };
 
-    this.addCookie = function (key, id) {
+    this.addCookie = function (trolleyBasketId, cookieId) {
         var info;
 
         $.post('/ajax/add_cookie/', {
-            key: key,
-            id: id
+            trolleyBasketId: trolleyBasketId,
+            cookieId: cookieId
         }, function (response) {
             var data = eval('(' + response + ')');
 
             if (data['status'] == 1) {
-                this.addCookieRow(id, data['quantity']);
+                this.addCookieRow(cookieId, data['quantity']);
             } else if (data['status'] == 2) {
-                if (data['nextBasket'] !== null) {
-                    this.increaseBasketSizePrompt(data['nextBasket'], key, id);
-                } else {
-                    info = {
-                        'heading': 'Error',
-                        'message': data['message'],
-                        'link': false
-                    };
-
-                    this.showMessage(info);
-                }
+                this.increaseBasketSizePrompt(data['nextBasket'], trolleyBasketId, cookieId);
             } else {
                 info = {
                     'heading': 'Error',
@@ -116,25 +106,25 @@ TrolleyManager = function () {
         });
     };
 
-    this.removeCookie = function (key, id) {
+    this.removeCookie = function (trolleyBasketId, cookieId) {
         $.post('/ajax/remove_cookie/', {
-            key: key,
-            id: id
+            trolleyBasketId: trolleyBasketId,
+            cookieId: cookieId
         }, function (response) {
             var data = eval('(' + response + ')');
 
-            if (data['status'] == 1) {
+            if (data['status'] > 0) {
                 if (data['quantity'] == 0) {
-                    $('#removalId' + id).fadeTo(300, 0, function () {
+                    $('#removalId' + cookieId).fadeTo(300, 0, function () {
                         $(this).remove();
                     });
                 } else {
                     var quantity = (data['quantity'] >= 2) ? data['quantity'] + 'x' : '';
-                    $('#removalId' + id + ' .cookieQuantity').html(quantity);
+                    $('#removalId' + cookieId + ' .cookieQuantity').html(quantity);
                 }
 
-                if (data['prevBasket'] != null) {
-                    this.reduceBasketSizePrompt(data['prevBasket']);
+                if (data['status'] == 2) {
+                    this.reduceBasketSizePrompt(data['prevBasket'], trolleyBasketId);
                 }
             } else {
                 var info = {
@@ -167,7 +157,7 @@ TrolleyManager = function () {
         }
     };
 
-    this.reduceBasketSizePrompt = function (basket) {
+    this.reduceBasketSizePrompt = function (basket, trolleyBasketId) {
         var message = 'This Basket is now small enough to be downsized to a ' + basket['name'] + ' Basket.<br />';
         message += '<strong>' + basket['name'] + ' Basket:</strong> $' + basket['price'] + ' - Holds ' + basket['size'] + ' items</p>';
         message += '<p>Would you like to downsize your Basket?</p>';
@@ -175,7 +165,7 @@ TrolleyManager = function () {
         this.showChoice(message);
 
         $('#modalChoice .btn-success').unbind().click(function () {
-            this.changeBasketSize(basket);
+            this.changeBasketSize(basket, trolleyBasketId);
         });
 
         $('#modalChoice .btn-danger').click(function () {
@@ -183,7 +173,7 @@ TrolleyManager = function () {
         });
     };
 
-    this.increaseBasketSizePrompt = function (basket, key, id) {
+    this.increaseBasketSizePrompt = function (basket, trolleyBasketId, cookieId) {
         var message = 'You cannot fit any more cookies in your ' + $('#basketDetails strong').html() + '.<br />';
         message += '<strong>' + basket['name'] + ' Basket:</strong> $' + basket['price'] + ' - Holds ' + basket['size'] + ' items</p>';
         message += '<p>Would you like to increase the size of your Basket?</p>';
@@ -191,7 +181,7 @@ TrolleyManager = function () {
         this.showChoice(message);
 
         $('#modalChoice .btn-success').unbind().click(function () {
-            this.changeBasketSize(basket, key, id);
+            this.changeBasketSize(basket, trolleyBasketId, cookieId);
         });
 
         $('#modalChoice .btn-danger').click(function () {
@@ -199,21 +189,21 @@ TrolleyManager = function () {
         });
     };
 
-    this.changeBasketSize = function (basket, key, id) {
-        key = typeof key !== 'undefined' ? key : null;
-        id = typeof id !== 'undefined' ? id : null;
+    this.changeBasketSize = function (basket, trolleyBasketId, cookieId) {
+        trolleyBasketId = typeof trolleyBasketId !== 'undefined' ? trolleyBasketId : null;
+        cookieId = typeof cookieId !== 'undefined' ? cookieId : null;
 
         $.post('/ajax/set_basket_type/', {
-            key: basket['key'],
-            type: basket['type']
+            trolleyBasketId: trolleyBasketId,
+            basketId: basket['basketId']
         }, function (response) {
             var data = eval('(' + response + ')');
 
             if (data['status'] == 1) {
                 this.changeBasketDetails(basket);
 
-                if (key !== null && id !== null) {
-                    this.addCookie(key, id);
+                if (trolleyBasketId !== null && cookieId !== null) {
+                    this.addCookie(trolleyBasketId, cookieId);
                 }
 
                 this.close();
@@ -229,8 +219,8 @@ TrolleyManager = function () {
         });
     };
 
-    this.removeBasketRow = function (key) {
-        $('.cartProduct#product' + key).fadeOut();
+    this.removeBasketRow = function (id) {
+        $('.cartProduct#product' + id).fadeOut();
     };
 
     this.changeBasketDetails = function (basket) {

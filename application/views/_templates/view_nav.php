@@ -3,11 +3,11 @@
         <div class="container">
             <a class="brand" href="/">Cookie Shop</a>
             <a class="brand right" id="cartCount" href="/cart/">
-            <? if($cart->countBaskets() > 0) :?>
-                Items in cart: <?=$cart->countBaskets();?>
-            <? else: ?>
-                Cart is empty
-            <? endif;?>
+                <?php if ($trolley->countTrolleyBaskets() > 0) { ?>
+                    Items in cart: <?php echo $trolley->countTrolleyBaskets(); ?>
+                <?php } else { ?>
+                    Cart is empty
+                <?php } ?>
             </a>
             <div class="nav-collapse">
                 <ul class="nav">

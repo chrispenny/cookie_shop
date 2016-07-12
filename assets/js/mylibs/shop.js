@@ -2,8 +2,9 @@ $(document).ready(function () {
     var TrolleyManager = new TrolleyManager();
 
     $('.addProduct button').click(function () {
-        var id = parseFloat($('.basketId', $(this).parents('.row')).html());
-        TrolleyManager.addBasket(id);
+        var basketId = parseInt($(this).parents('.row').data('basket'));
+
+        TrolleyManager.addBasket(basketId);
     });
 
     $('.cartProduct a.btn-inverse').click(function (e) {
@@ -13,8 +14,9 @@ $(document).ready(function () {
     $('.cartProduct a.btn-danger').click(function (e) {
         e.preventDefault();
 
-        var key = parseFloat($('.basketKey', $(this).parents('.row')).html());
-        TrolleyManager.removeBasket(key);
+        var trolleyBasketId = parseInt($(this).parents('.row').data('basket'));
+
+        TrolleyManager.removeBasket(trolleyBasketId);
     });
 
     $('.cookieThumbs a').live({
@@ -28,18 +30,18 @@ $(document).ready(function () {
     $('.basketCookies a').live('click', function (e) {
         e.preventDefault();
 
-        var key = parseFloat($('.basketKey').html());
-        var id = parseFloat($('span.cookieId', $(this)).html());
+        var trolleyBasketId = parseInt($('#basketRow').data('basketRow'));
+        var cookieId = parseInt($(this).parents('li').data('cookie'));
 
-        TrolleyManager.removeCookie(key, id);
+        TrolleyManager.removeCookie(trolleyBasketId, cookieId);
     });
 
     $('.availableCookies a').click(function (e) {
         e.preventDefault();
 
-        var key = parseFloat($('.basketKey').html());
-        var id = parseFloat($('span.cookieId', $(this)).html());
+        var trolleyBasketId = parseInt($('#basketRow').data('basketRow'));
+        var cookieId = parseInt($(this).parents('li').data('cookie'));
 
-        TrolleyManager.addCookie(key, id);
+        TrolleyManager.addCookie(trolleyBasketId, cookieId);
     });
 });

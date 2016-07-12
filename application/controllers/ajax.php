@@ -16,8 +16,6 @@
 if (!defined('BASEPATH'))
     exit('No direct script access allowed');
 
-use CookieShop\Model\BasketPeer;
-
 class Ajax extends CI_Controller
 {
     public function __construct()
@@ -36,150 +34,268 @@ class Ajax extends CI_Controller
 
     public function add_basket()
     {
-        $cart = new Shop_cart();
+        $trolley = \CookieShop\Models\TrolleyPeer::retrieveTrolley($this->session->userdata('id'));
 
-        $id = $this->input->post('id') ?: null;
+        $basketId = $this->input->post('basketId') ?: null;
 
-        $basket = $cart->addBasket($id);
-        if ($basket !== null) {
+        $basket = \CookieShop\Models\BasketPeer::retrieveByPk($basketId);
+        if ($basket === null) {
+            $result = array(
+                'status' => 0,
+                'message' => 'Basket not found. ID: ' . $basketId,
+            );
+
+            echo json_encode($result);
+            return;
+        }
+
+        try {
+            $trolley->addBasket($basket);
+
+            $conn = Propel::getConnection();
+            $conn->beginTransaction();
+
+            $trolley->save($conn);
+
+            $conn->commit();
+
             $result = array(
                 'status' => 1,
                 'message' => 'Your ' . $basket->getName() . ' Basket has been added to your cart. You can now visit your cart and edit the contents of your Basket or close this box to continue shopping.',
             );
-        } else {
+        } catch (\Exception $e) {
             $result = array(
                 'status' => 0,
-                'message' => 'Your Basket could not be added, please refresh the page and try again.',
+                'message' => 'Your basket could not be added, please refresh the page and try again.',
             );
         }
 
-        $cart->save();
+        $trolley->save();
 
         echo json_encode($result);
     }
 
     public function remove_basket()
     {
-        $cart = new Shop_cart();
+        $trolley = \CookieShop\Models\TrolleyPeer::retrieveTrolley($this->session->userdata('id'));
 
-        // a $key value of 0 is perfectly valid, but because PHP considers 0 == false, we can't use shorthand. Comparison of value type must be made.
-        $key = $this->input->post('key') !== false ? $this->input->post('key') : null;
+        $trolleyBasketId = $this->input->post('trolleyBasketId') ?: null;
 
-        if ($cart->removeBasket($key)) {
+        $trolleyBasket = \CookieShop\Models\TrolleyBasketPeer::retrieveByPk($trolleyBasketId);
+        if ($trolleyBasket === null) {
+            $result = array(
+                'status' => 0,
+                'message' => 'Trolley basket not found. ID: ' . $trolleyBasketId,
+            );
+
+            echo json_encode($result);
+            return;
+        }
+
+        try {
+            $trolley->removeTrolleyBasket($trolleyBasket);
+
+            $conn = Propel::getConnection();
+            $conn->beginTransaction();
+
+            $trolley->save($conn);
+
             $result = array(
                 'status' => 1,
                 'message' => null,
             );
-        } else {
+        } catch (\Exception $e) {
             $result = array(
                 'status' => 0,
                 'message' => 'Your Basket could not be removed, please refresh the page and try again.',
             );
         }
 
-        $cart->save();
-
         echo json_encode($result);
     }
 
     public function add_cookie()
     {
-        $cart = new Shop_cart();
+        $trolleyBasketId = $this->input->post('trolleyBasketId') ?: null;
+        $cookieId = $this->input->post('cookieId') ?: null;
 
-        // a $key value of 0 is perfectly valid, but because PHP considers 0 == false, we can't use shorthand. Comparison of value type must be made.
-        $key = $this->input->post('key') !== false ? $this->input->post('key') : null;
-        $id = $this->input->post('id') ?: null;
-
-        $basket = $cart->getBasket($key);
-        if ($basket !== null) {
-            if ($basket->isFlaggedAsFull()) {
-                $results = array(
-                    'status' => 2,
-                    'quantity' => null,
-                    'nextBasket' => BasketPeer::getNextBasketSizeAsArray($basket, $key),
-                    'message' => 'Your Basket is currently full, and here are no larger Baskets for you to upgrade to.<br /> Please either remove some cookies from the Basket, or purchase another Basket from the <a href="/">Shop</a>.',
-                );
-            } else {
-                $results = array(
-                    'status' => 1,
-                    'quantity' => $basket->addCookie($id),
-                    'nextBasket' => null,
-                    'message' => null,
-                );
-
-                $cart->save();
-            }
-        } else {
-            $results = array(
+        $trolleyBasket = \CookieShop\Models\TrolleyBasketPeer::retrieveByPk($trolleyBasketId);
+        if ($trolleyBasket === null) {
+            $result = array(
                 'status' => 0,
-                'quantity' => null,
-                'nextBasket' => null,
+                'message' => 'Trolley basket not found. ID: ' . $trolleyBasketId,
+            );
+
+            echo json_encode($result);
+            return;
+        }
+
+        $cookie = \CookieShop\Models\CookiePeer::retrieveByPk($cookieId);
+        if ($trolleyBasket === null) {
+            $result = array(
+                'status' => 0,
+                'message' => 'Cookie not found. ID: ' . $cookieId,
+            );
+
+            echo json_encode($result);
+            return;
+        }
+
+        try {
+            if ($trolleyBasket->isFull()) {
+                $nextBasketSize = \CookieShop\Models\BasketPeer::getNextBasketSizeAsArray($trolleyBasket->getBasket());
+
+                if ($nextBasketSize === null) {
+                    $result = array(
+                        'status' => 0,
+                        'message' => 'Your Basket is currently full, and here are no larger Baskets for you to upgrade to.<br /> Please either remove some cookies from the Basket, or purchase another Basket from the <a href="/">Shop</a>.',
+                    );
+                } else {
+                    $result = array(
+                        'status' => 2,
+                        'nextBasket' => $nextBasketSize,
+                    );
+                }
+            } else {
+                $trolleyBasket->addCookie($cookie);
+
+                $conn = Propel::getConnection();
+                $conn->beginTransaction();
+
+                $trolleyBasket->save($conn);
+
+                $conn->commit();
+
+                $result = array(
+                    'status' => 1,
+                    'quantity' => $trolleyBasket->countTrolleyBasketCookies(),
+                );
+            }
+        } catch (\Exception $e) {
+            $result = array(
+                'status' => 0,
                 'message' => 'Your Cookie could not be added. Please refresh the page and try again.',
             );
         }
 
-        echo json_encode($results);
+        echo json_encode($result);
     }
 
     public function remove_cookie()
     {
-        $cart = new Shop_cart();
+        $trolleyBasketId = $this->input->post('trolleyBasketId') ?: null;
+        $cookieId = $this->input->post('cookieId') ?: null;
 
-        // a $key value of 0 is perfectly valid, but because PHP considers 0 == false, we can't use shorthand. Comparison of value type must be made.
-        $key = $this->input->post('key') !== false ? $this->input->post('key') : null;
-        $id = $this->input->post('id') ?: null;
-
-        $basket = $cart->getBasket($key);
-        if ($basket !== null) {
-            $results = array(
-                'status' => 1,
-                'quantity' => $basket->removeCookie($id),
-                'prevBasket' => BasketPeer::getPrevBasketSizeAsArray($basket, $key),
-                'message' => null,
+        $trolleyBasket = \CookieShop\Models\TrolleyBasketPeer::retrieveByPk($trolleyBasketId);
+        if ($trolleyBasket === null) {
+            $result = array(
+                'status' => 0,
+                'message' => 'Trolley basket not found. ID: ' . $trolleyBasketId,
             );
 
-            $cart->save();
-        } else {
-            $results = array(
-                'status' => 2,
-                'quantity' => null,
-                'prevBasket' => null,
+            echo json_encode($result);
+            return;
+        }
+
+        $cookie = \CookieShop\Models\CookiePeer::retrieveByPk($cookieId);
+        if ($trolleyBasket === null) {
+            $result = array(
+                'status' => 0,
+                'message' => 'Cookie not found. ID: ' . $cookieId,
+            );
+
+            echo json_encode($result);
+            return;
+        }
+
+        try {
+            $trolleyBasket->removeCookie($cookie);
+
+            $conn = Propel::getConnection();
+            $conn->beginTransaction();
+
+            $trolleyBasket->save($conn);
+
+            $conn->commit();
+
+            if ($trolleyBasket->canDownsize()) {
+                $result = array(
+                    'status' => 2,
+                    'quantity' => $trolleyBasket->countTrolleyBasketCookies(),
+                    'prevBasket' => \CookieShop\Models\BasketPeer::getPrevBasketSizeAsArray($trolleyBasket->getBasket()),
+                );
+            } else {
+                $result = array(
+                    'status' => 1,
+                    'quantity' => $trolleyBasket->countTrolleyBasketCookies(),
+                );
+            }
+        } catch (\Exception $e) {
+            $result = array(
+                'status' => 0,
                 'message' => 'Your Cookie could not be removed, please refresh the page and try again.',
             );
         }
 
-        echo json_encode($results);
+        echo json_encode($result);
     }
 
     public function set_basket_type()
     {
-        $cart = new Shop_cart();
+        $trolleyBasketId = $this->input->post('trolleyBasketId') ?: null;
+        $basketId = $this->input->post('basketId') ?: null;
 
-        // a $key value of 0 is perfectly valid, but because PHP considers 0 == false, we can't use shorthand. Comparison of value type must be made.
-        $key = $this->input->post('key') !== false ? $this->input->post('key') : null;
-        $id = $this->input->post('type') ?: null;
+        $trolleyBasket = \CookieShop\Models\TrolleyBasketPeer::retrieveByPk($trolleyBasketId);
+        if ($trolleyBasket === null) {
+            $result = array(
+                'status' => 0,
+                'message' => 'Trolley basket not found. ID: ' . $trolleyBasketId,
+            );
 
-        if ($cart->setBasketType($key, $id)) {
-            $cart->save();
+            echo json_encode($result);
+            return;
+        }
+
+        $basket = \CookieShop\Models\BasketPeer::retrieveByPk($basketId);
+        if ($basket === null) {
+            $result = array(
+                'status' => 0,
+                'message' => 'Basket not found. ID: ' . $basketId,
+            );
+
+            echo json_encode($result);
+            return;
+        }
+
+        try {
+            $trolleyBasket->setBasket($basket);
+
+            $conn = Propel::getConnection();
+            $conn->beginTransaction();
+
+            $trolleyBasket->save($conn);
+
+            $conn->commit();
 
             $result = array(
                 'status' => 1,
                 'message' => null,
             );
-        } else {
+        } catch (\Exception $e) {
             $result = array(
                 'status' => 0,
                 'message' => 'Your Basket size could not be changed, please refresh the page and try again.',
             );
         }
 
+
         echo json_encode($result);
     }
 
     public function check_cart_count()
     {
-        $cart = new Shop_cart();
+        $trolley = \CookieShop\Models\TrolleyPeer::retrieveTrolley($this->session->userdata('id'));
 
-        echo $cart->countBaskets();
+        echo $trolley->countTrolleyBaskets();
     }
 }

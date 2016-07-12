@@ -4,17 +4,37 @@ namespace CookieShop\Models;
 
 use CookieShop\Models\Base\Trolley as BaseTrolley;
 
-/**
- * Skeleton subclass for representing a row from the 'trolley' table.
- *
- *
- *
- * You should add additional methods to this class to meet the
- * application requirements.  This class will only be generated as
- * long as it does not already exist in the output directory.
- *
- */
 class Trolley extends BaseTrolley
 {
+    /**
+     * @param Basket $basket
+     */
+    public function addBasket(Basket $basket)
+    {
+        $trolleyBasket = new TrolleyBasket();
+        $trolleyBasket->setBasket($basket);
 
+        // set the default cookies into the basket
+        foreach ($basket->getBasketCookies() as $basketCookie) {
+            $trolleyBasketCookie = new TrolleyBasketCookie();
+            $trolleyBasketCookie->setCookie($basketCookie->getCookie());
+
+            $trolleyBasket->addTrolleyBasketCookie($trolleyBasketCookie);
+        }
+
+        $this->addTrolleyBasket($trolleyBasket);
+    }
+
+    /**
+     * @param TrolleyBasket $trolleyBasket
+     * @return Trolley
+     */
+    public function removeTrolleyBasket(TrolleyBasket $trolleyBasket)
+    {
+        foreach ($trolleyBasket->getTrolleyBasketCookies() as $trolleyBasketCookie) {
+            $trolleyBasket->removeTrolleyBasketCookie($trolleyBasketCookie);
+        }
+
+        return parent::removeTrolleyBasket($trolleyBasket);
+    }
 }

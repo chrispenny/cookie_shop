@@ -1,7 +1,5 @@
 <?php
 
-use CookieShop\Model\CookiePeer;
-
 if (!defined('BASEPATH'))
     exit('No direct script access allowed');
 
@@ -9,10 +7,12 @@ class Cart extends CI_Controller
 {
     public function index()
     {
+        $trolley = \CookieShop\Models\TrolleyPeer::retrieveTrolley($this->session->userdata('id'));
+
         $data = array(
             'title' => 'Cart',
             'page' => 'cart/view_index',
-            'cart' => new Shop_cart(),
+            'trolley' => $trolley,
         );
 
         $this->load->view('template', $data);
@@ -20,19 +20,27 @@ class Cart extends CI_Controller
 
     public function edit()
     {
-        $key = $this->uri->segment(3);
-        if ($key === false) {
+        $trolleyBasketId = $this->uri->segment(3);
+        if ($trolleyBasketId === false) {
+            // set some kind of error info flash data.
+
             redirect('/');
         }
 
-        $cart = new Shop_cart();
+        $trolleyBasket = \CookieShop\Models\TrolleyBasketPeer::retrieveByPk($trolleyBasketId);
+        if ($trolleyBasket === null) {
+            // set some kind of error info flash data.
+
+            redirect('/');
+        }
+
+        $cookies = \CookieShop\Models\CookiePeer::retrieveCookies();
 
         $data = array(
             'title' => 'Cart',
             'page' => 'cart/view_edit',
-            'cart' => $cart,
-            'basket' => $cart->getBasket($key),
-            'cookies' => CookiePeer::retrieveCookies(),
+            'trolleyBasket' => $trolleyBasket,
+            'cookies' => $cookies,
         );
 
         $this->load->view('template', $data);
