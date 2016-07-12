@@ -1,5 +1,5 @@
 {
     "require": {
-        "propel/propel1": "~1.6"
+        "propel/propel": "~2.0@dev"
     }
 }
