@@ -1,18 +1,18 @@
 <database name="default" defaultIdMethod="native" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://xsd.propelorm.org/1.6/database.xsd" namespace="CookieShop\Models">
     <table name="basket" phpName="Basket">
-        <column name="id" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
-        <column name="name" type="VARCHAR" size="255" required="true"/>
-        <column name="price" type="FLOAT" required="true"/>
-        <column name="size" type="INTEGER" required="true"/>
-        <column name="sort_order" type="INTEGER" required="true"/>
+        <column name="id" type="integer" sqlType="INTEGER UNSIGNED" primaryKey="true" autoIncrement="true" required="true"/>
+        <column name="name" type="varchar" size="255" required="true"/>
+        <column name="price" type="decimal" size="8" scale="2" required="true"/>
+        <column name="size" type="tinyint" sqlType="TINYINT UNSIGNED" required="true"/>
+        <column name="sort_order" type="tinyint" sqlType="TINYINT UNSIGNED" required="true"/>
     </table>
 
     <table name="basket_cookie" phpName="BasketCookie">
-        <column name="id" phpName="Id" type="" primaryKey="true" autoIncrement="true" required="true"/>
-        <column name="basket_id" type="INTEGER" required="true"/>
-        <column name="cookie_id" type="INTEGER" required="true"/>
-        <column name="quantity" type="INTEGER" required="true"/>
-        <column name="sort_order" type="INTEGER" required="true"/>
+        <column name="id" type="integer" sqlType="INTEGER UNSIGNED" primaryKey="true" autoIncrement="true" required="true"/>
+        <column name="basket_id" type="integer" sqlType="INTEGER UNSIGNED" required="true"/>
+        <column name="cookie_id" type="integer" sqlType="INTEGER UNSIGNED" required="true"/>
+        <column name="quantity" type="integer" sqlType="INTEGER UNSIGNED" required="true"/>
+        <column name="sort_order" type="tinyint" sqlType="TINYINT UNSIGNED" required="true"/>
 
         <foreign-key foreignTable="basket" name="FK_BasketCookie_Basket">
             <reference local="basket_id" foreign="id"/>
@@ -23,26 +23,26 @@
     </table>
 
     <table name="ci_sessions" phpName="CiSession">
-        <column name="session_id" type="VARCHAR" size="40" primaryKey="true" required="true"/>
-        <column name="ip_address" type="VARCHAR" size="45" required="true"/>
-        <column name="user_agent" type="VARCHAR" size="120" required="true"/>
-        <column name="last_activity" type="INTEGER" required="true"/>
-        <column name="user_data" type="LONGVARCHAR" required="true"/>
+        <column name="session_id" type="varchar" size="40" primaryKey="true" required="true"/>
+        <column name="ip_address" type="varchar" size="45" required="true"/>
+        <column name="user_agent" type="varchar" size="120" required="true"/>
+        <column name="last_activity" type="integer" sqlType="INTEGER UNSIGNED" required="true"/>
+        <column name="user_data" type="longvarchar" required="true"/>
     </table>
 
     <table name="cookie" phpName="Cookie">
-        <column name="id" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
-        <column name="name" type="VARCHAR" size="255" required="true"/>
-        <column name="img" type="VARCHAR" size="255" required="true"/>
+        <column name="id" type="integer" sqlType="INTEGER UNSIGNED" primaryKey="true" autoIncrement="true" required="true"/>
+        <column name="name" type="varchar" size="255" required="true"/>
+        <column name="img" type="varchar" size="255" required="true"/>
     </table>
 
     <!-- Customer table, if I had time -->
 
     <table name="trolley" phpName="Trolley">
-        <column name="id" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
-        <column name="ci_session_id" type="VARCHAR" size="40"/>
-        <column name="customer_id" type="INTEGER"/>
-        <column name="last_modified" type="DATETIME" required="true"/>
+        <column name="id" type="integer" sqlType="INTEGER UNSIGNED" primaryKey="true" autoIncrement="true" required="true"/>
+        <column name="ci_session_id" type="varchar" size="40"/>
+        <column name="customer_id" type="integer" sqlType="INTEGER UNSIGNED"/>
+        <column name="last_modified" type="timestamp" sqlType="DATETIME" required="true"/>
 
         <foreign-key foreignTable="ci_sessions" name="FK_Trolley_CiSession">
             <reference local="ci_session_id" foreign="session_id"/>
@@ -51,9 +51,9 @@
     </table>
 
     <table name="trolley_basket" phpName="TrolleyBasket">
-        <column name="id" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
-        <column name="trolley_id" type="INTEGER" required="true"/>
-        <column name="basket_id" type="INTEGER" required="true"/>
+        <column name="id" type="integer" sqlType="INTEGER UNSIGNED" primaryKey="true" autoIncrement="true" required="true"/>
+        <column name="trolley_id" type="integer" sqlType="INTEGER UNSIGNED" required="true"/>
+        <column name="basket_id" type="integer" sqlType="INTEGER UNSIGNED" required="true"/>
 
         <foreign-key foreignTable="trolley" name="FK_TrolleyBasket_Trolley">
             <reference local="trolley_id" foreign="id"/>
@@ -64,9 +64,9 @@
     </table>
 
     <table name="trolley_basket_cookie" phpName="TrolleyBasketCookie">
-        <column name="id" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
-        <column name="trolley_basket_id" type="INTEGER" required="true"/>
-        <column name="cookie_id" type="INTEGER" required="true"/>
+        <column name="id" type="integer" sqlType="INTEGER UNSIGNED" primaryKey="true" autoIncrement="true" required="true"/>
+        <column name="trolley_basket_id" type="integer" sqlType="INTEGER UNSIGNED" required="true"/>
+        <column name="cookie_id" type="integer" sqlType="INTEGER UNSIGNED" required="true"/>
 
         <foreign-key foreignTable="trolley_basket" name="FK_TrolleyBasketCookie_TrolleyBasket">
             <reference local="trolley_basket_id" foreign="id"/>
