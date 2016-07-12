@@ -1,3 +1,4 @@
 .idea
 vendor/*
 user_guide/*
+application/build/data/propel.yml
