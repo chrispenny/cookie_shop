@@ -37,7 +37,7 @@ class Cart extends CI_Controller
 
         $trolleyBasket = \CookieShop\Models\TrolleyBasketPeer::retrieveByPk($trolleyBasketId);
         if ($trolleyBasket === null) {
-            // set some kind of error info flash data.
+            // set some kind of error into flash data.
 
             redirect('/cart');
         }
