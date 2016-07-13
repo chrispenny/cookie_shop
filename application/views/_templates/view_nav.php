@@ -12,7 +12,7 @@
             <div class="nav-collapse">
                 <ul class="nav">
                     <li><a href="/">Shop</a></li>
-                    <li><a href="/cart/">Cart</a></li>
+                    <li><a href="/cart">Cart</a></li>
                 </ul>
             </div>
         </div>

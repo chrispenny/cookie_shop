@@ -7,10 +7,10 @@
  * I prefer to return null if data is not found, so you'll see a lot of
  * this throughout the project:
  *
+ * $value = CI->data('key') ?: null;
+ *
  * Note 2: The above is no longer an issue in CI3, but I haven't had
  * time to revamp this project.
- *
- * $value = CI->data('key') ?: null;
  */
 
 if (!defined('BASEPATH'))
