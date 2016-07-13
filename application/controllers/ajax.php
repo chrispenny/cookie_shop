@@ -148,7 +148,7 @@ class Ajax extends CI_Controller
                 if ($nextBasketSize === null) {
                     $result = array(
                         'status' => 0,
-                        'message' => 'Your Basket is currently full, and here are no larger Baskets for you to upgrade to.<br /> Please either remove some cookies from the Basket, or purchase another Basket from the <a href="/">Shop</a>.',
+                        'message' => 'Your Basket is currently full and there are no larger Baskets for you to upgrade to.<br /> Please either remove some cookies from the Basket, or purchase another Basket from the <a href="/">Shop</a>.',
                     );
                 } else {
                     $result = array(

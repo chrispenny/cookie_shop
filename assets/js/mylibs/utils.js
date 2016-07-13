@@ -31,9 +31,9 @@ Overlay = function () {
 TrolleyManager = function () {
     $.extend(this, new Overlay());
 
-    this.addBasket = function (id) {
+    this.addBasket = function (basketId) {
         $.post('/ajax/add_basket/', {
-            basketId: id
+            basketId: basketId
         }, function (response) {
             var data = eval('(' + response + ')');
             var info;
@@ -60,14 +60,14 @@ TrolleyManager = function () {
         });
     };
 
-    this.removeBasket = function (id) {
+    this.removeBasket = function (trolleyBasketId) {
         $.post('/ajax/remove_basket/', {
-            trolleyBasketId: id
+            trolleyBasketId: trolleyBasketId
         }, function (response) {
             var data = eval('(' + response + ')');
 
             if (data['status'] == 1) {
-                this.removeBasketRow(id);
+                this.removeBasketRow(trolleyBasketId);
                 this.checkCartCount();
             } else {
                 var info = {
@@ -138,15 +138,17 @@ TrolleyManager = function () {
         });
     };
 
-    this.addCookieRow = function (id, quantity) {
-        if ($('#removalId' + id).length == 1) {
-            $('.cookieQuantity', $('#removalId' + id)).html(quantity + 'x');
+    this.addCookieRow = function (cookieId, quantity) {
+        var existingRow = $('#removalId' + cookieId);
+
+        if (existingRow.length == 1) {
+            $('.cookieQuantity', existingRow).html(quantity + 'x');
         } else {
             var span = $('<span></span>');
             span.addClass('cookieQuantity');
 
-            var newRow = $('#availableId' + id).clone();
-            newRow.remove('#availableId' + id).attr('id', 'removalId' + id).prepend(span);
+            var newRow = $('#availableId' + cookieId).clone();
+            newRow.remove('#availableId' + cookieId).attr('id', 'removalId' + cookieId).prepend(span);
 
             $('span.btn-success', newRow).removeClass('btn-success').addClass('btn-danger');
             $('i.icon-shopping-cart', newRow).removeClass('icon-shopping-cart').addClass('icon-trash');
@@ -219,8 +221,8 @@ TrolleyManager = function () {
         });
     };
 
-    this.removeBasketRow = function (id) {
-        $('.cartProduct#product' + id).fadeOut();
+    this.removeBasketRow = function (trolleyBasketId) {
+        $('.cartProduct#product' + trolleyBasketId).fadeOut();
     };
 
     this.changeBasketDetails = function (basket) {
@@ -229,7 +231,7 @@ TrolleyManager = function () {
 
     this.checkCartCount = function () {
         $.get('/ajax/check_cart_count/', function (response) {
-            response = parseFloat(response);
+            response = parseInt(response);
 
             if (response > 0) {
                 $('#cartCount').html('Items in cart: ' + response);
